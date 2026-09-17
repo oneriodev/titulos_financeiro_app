@@ -1,0 +1,24 @@
+# Ambiente virtual
+venv/
+.venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+
+# Dados reais (não versionar informações financeiras)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Editor e sistema
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Segredos do Streamlit
+.streamlit/secrets.toml
