@@ -12,6 +12,16 @@ data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
+# Relatórios e planilhas em qualquer pasta do projeto
+*.xlsx
+*.xls
+*.csv
+*.txt
+*.pdf
+
+# Exceções: arquivos de texto que fazem parte do projeto
+!requirements.txt
+
 # Notebooks
 .ipynb_checkpoints/
 
