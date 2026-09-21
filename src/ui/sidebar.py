@@ -22,6 +22,10 @@ CHAVE_ESPECIES = "filtro_especies"
 CHAVE_ARQUIVO = "_arquivo_dos_filtros"
 CHAVES_FILTROS = [CHAVE_PERIODO, CHAVE_EMPRESAS, CHAVE_ESPECIES]
 
+# Versão do uploader: trocar a chave força o Streamlit a criar
+# um uploader novo, descartando o arquivo carregado.
+CHAVE_VERSAO_UPLOADER = "_versao_uploader"
+
 
 # ---------------------------------------------------------------------
 # Upload
@@ -31,12 +35,26 @@ def _tamanho_em_mb(arquivo) -> float:
     return arquivo.size / (1024 * 1024)
 
 
+def _limpar_dados() -> None:
+    """
+    Zera todo o estado da aplicação e descarta o arquivo carregado.
+
+    O contador de versão é preservado e incrementado, para que o
+    uploader receba uma chave nova após o clear().
+    """
+    proxima_versao = st.session_state.get(CHAVE_VERSAO_UPLOADER, 0) + 1
+    st.session_state.clear()
+    st.session_state[CHAVE_VERSAO_UPLOADER] = proxima_versao
+
+
 def renderizar_sidebar() -> Optional[object]:
     """
     Desenha a área de upload e devolve o arquivo enviado pelo usuário.
 
     Retorna None enquanto nenhum arquivo válido for carregado.
     """
+    versao = st.session_state.setdefault(CHAVE_VERSAO_UPLOADER, 0)
+
     with st.sidebar:
         st.header("📂 Importar dados")
 
@@ -46,6 +64,7 @@ def renderizar_sidebar() -> Optional[object]:
             accept_multiple_files=False,
             help=f"Formatos aceitos: {', '.join(EXTENSOES_ACEITAS).upper()}. "
                  f"Tamanho máximo: {TAMANHO_MAX_MB} MB.",
+            key=f"uploader_{versao}",
         )
 
         if arquivo is None:
@@ -65,7 +84,7 @@ def renderizar_sidebar() -> Optional[object]:
         st.caption(f"**{arquivo.name}** — {tamanho:.2f} MB")
 
         if st.button("🗑️ Limpar dados", use_container_width=True):
-            st.session_state.clear()
+            _limpar_dados()
             st.rerun()
 
         return arquivo
