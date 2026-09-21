@@ -24,4 +24,4 @@ def formatar_inteiro(valor: int) -> str:
 
 def cartao(titulo: str, valor: float, ajuda: str = "") -> None:
     """Desenha um cartão de indicador com valor monetário."""
-    st.metric(label=titulo, value=formatar_moeda(valor), help=ajuda or None),
+    st.metric(label=titulo, value=formatar_moeda(valor), help=ajuda or None)
