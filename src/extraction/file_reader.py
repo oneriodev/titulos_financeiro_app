@@ -17,7 +17,14 @@ def _ler_xlsx(arquivo) -> pd.DataFrame:
 def _ler_texto(arquivo) -> pd.DataFrame:
     """
     Lê CSV ou TXT delimitado, testando codificações e separadores.
+
     Um resultado com apenas uma coluna indica separador incorreto.
+
+    index_col=False impede que o pandas transforme a primeira coluna em
+    índice quando as linhas têm mais campos que o cabeçalho. Isso ocorre
+    nas exportações do Consinco, em que cada linha termina com ';' extras.
+    Sem esse parâmetro, todas as colunas ficam deslocadas uma posição,
+    sem nenhum erro aparente.
     """
     bytes_arquivo = arquivo.getvalue()
 
@@ -28,7 +35,12 @@ def _ler_texto(arquivo) -> pd.DataFrame:
             continue
 
         for separador in SEPARADORES_TENTATIVAS:
-            df = pd.read_csv(io.StringIO(texto), sep=separador, dtype=str)
+            df = pd.read_csv(
+                io.StringIO(texto),
+                sep=separador,
+                dtype=str,
+                index_col=False,
+            )
             if df.shape[1] > 1:
                 return df
 
