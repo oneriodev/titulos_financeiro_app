@@ -11,6 +11,7 @@ from config.settings import (
     COLUNA_ANO_MES,
     COLUNA_DATA_PADRAO,
     COLUNA_DIA_SEMANA,
+    COLUNA_EMPRESA,
     COLUNA_ESPECIE,
     COLUNA_PESSOA,
     DIAS_SEMANA,
@@ -39,6 +40,17 @@ def _para_numero(serie: pd.Series) -> pd.Series:
     return pd.to_numeric(texto, errors="coerce").fillna(0.0)
 
 
+def _para_inteiro(serie: pd.Series) -> pd.Series:
+    """
+    Converte códigos numéricos (como o número da empresa) para inteiro.
+
+    Em CSV/TXT os códigos chegam como texto ("9"). Sem a conversão,
+    "9" nunca é igual a 9 e os filtros não encontram nenhuma linha.
+    O tipo Int64 aceita valores vazios, ao contrário do int comum.
+    """
+    return pd.to_numeric(serie, errors="coerce").astype("Int64")
+
+
 def limpar_dados(df: pd.DataFrame) -> pd.DataFrame:
     """
     Aplica o tratamento completo e devolve o DataFrame pronto para análise.
@@ -63,6 +75,10 @@ def limpar_dados(df: pd.DataFrame) -> pd.DataFrame:
     for coluna in COLUNAS_VALORES.values():
         if coluna in df.columns:
             df[coluna] = _para_numero(df[coluna])
+
+    # Códigos numéricos
+    if COLUNA_EMPRESA in df.columns:
+        df[COLUNA_EMPRESA] = _para_inteiro(df[COLUNA_EMPRESA])
 
     # Texto
     for coluna in (COLUNA_PESSOA, COLUNA_ESPECIE):
