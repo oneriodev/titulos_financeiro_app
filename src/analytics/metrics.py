@@ -161,4 +161,20 @@ def concentracao_hierarquica(
         base[nivel_1] = base[coluna_data].dt.to_period("W").apply(_rotulo_semana)
         base[nivel_2] = _rotulo_dia(base[coluna_data])
 
-    base["_ordem"] =
+    base["_ordem"] = base[coluna_data]
+
+    tabela = (
+        base.groupby([nivel_1, nivel_2])
+        .agg(Total=(coluna_valor, "sum"),
+             Títulos=(coluna_valor, "size"),
+             _ordem=("_ordem", "min"))
+        .sort_values("_ordem")
+        .drop(columns="_ordem")
+    )
+
+    total_geral = tabela["Total"].sum()
+    tabela["% do Total"] = (
+        tabela["Total"] / total_geral * 100 if total_geral else 0
+    )
+
+    return tabela
