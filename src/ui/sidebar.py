@@ -83,7 +83,7 @@ def renderizar_sidebar() -> Optional[object]:
         st.success("Arquivo carregado.")
         st.caption(f"**{arquivo.name}** — {tamanho:.2f} MB")
 
-        if st.button("🗑️ Limpar dados", use_container_width=True):
+        if st.button("🗑️ Limpar dados", width="stretch"):
             _limpar_dados()
             st.rerun()
 
@@ -120,7 +120,7 @@ def renderizar_filtros(df: pd.DataFrame, nome_arquivo: str) -> Filtros:
         st.header("🔎 Filtros")
 
         # O botão vem antes dos widgets para poder zerá-los com segurança
-        if st.button("↺ Limpar filtros", use_container_width=True):
+        if st.button("↺ Limpar filtros", width="stretch"):
             _limpar_filtros()
             st.rerun()
 

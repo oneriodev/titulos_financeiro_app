@@ -63,7 +63,7 @@ def renderizar_aba_metricas(df: pd.DataFrame) -> None:
     # 1. Evolução no tempo
     dados_evolucao, granularidade = evolucao_temporal(df, coluna_valor, coluna_data)
     st.plotly_chart(
-        grafico_evolucao(dados_evolucao, granularidade), use_container_width=True
+        grafico_evolucao(dados_evolucao, granularidade), width="stretch"
     )
     st.caption(
         f"Agrupamento {granularidade} detectado automaticamente pelo "
@@ -79,7 +79,7 @@ def renderizar_aba_metricas(df: pd.DataFrame) -> None:
             COLUNA_PESSOA,
             f"Top {TOP_N_PESSOAS} pessoas por gasto",
         ),
-        use_container_width=True,
+        width="stretch",
     )
 
     st.divider()
@@ -97,7 +97,7 @@ def renderizar_aba_metricas(df: pd.DataFrame) -> None:
                 "Títulos": "{:,.0f}".format,
             }
         ),
-        use_container_width=True,
+        width="stretch",
     )
 
     st.divider()
@@ -115,7 +115,7 @@ def renderizar_aba_metricas(df: pd.DataFrame) -> None:
                 COLUNA_PESSOA,
                 f"Top {TOP_N_JUROS} pessoas por juros pagos",
             ),
-            use_container_width=True,
+            width="stretch",
         )
 
     st.divider()
@@ -127,7 +127,7 @@ def renderizar_aba_metricas(df: pd.DataFrame) -> None:
             COLUNA_ESPECIE,
             f"Top {TOP_N_ESPECIES} espécies por gasto",
         ),
-        use_container_width=True,
+        width="stretch",
     )
 
     st.divider()
@@ -139,5 +139,5 @@ def renderizar_aba_metricas(df: pd.DataFrame) -> None:
             COLUNA_EMPRESA,
             "Gastos por empresa",
         ),
-        use_container_width=True,
+        width="stretch",
     )

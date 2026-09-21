@@ -76,7 +76,7 @@ def main() -> None:
             f"**{formatar_inteiro(len(df_filtrado))} registros** e "
             f"{df_filtrado.shape[1]} colunas."
         )
-        st.dataframe(df_filtrado, use_container_width=True, height=500)
+        st.dataframe(df_filtrado, width="stretch", height=500)
 
 
 if __name__ == "__main__":
