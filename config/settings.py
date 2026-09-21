@@ -28,9 +28,7 @@ SEPARADORES_TENTATIVAS = ["\t", ";", "|", ","]
 # ---------------------------------------------------------------------
 COLUNA_PESSOA = "Pessoa"
 COLUNA_ESPECIE = "Espécie"
-COLUNA_TITULO = "Título"
 COLUNA_EMPRESA = "Nro Empresa"
-COLUNA_DEPOSITARIO = "Depositário"
 
 # ---------------------------------------------------------------------
 # Colunas de data
@@ -104,12 +102,6 @@ COLUNAS_OBRIGATORIAS = [
 ] + list(COLUNAS_VALORES.values())
 
 # ---------------------------------------------------------------------
-# Formatos e parâmetros de análise
-# ---------------------------------------------------------------------
-FORMATO_DATA = "%d/%m/%Y"
-TOP_N = 5
-
-# ---------------------------------------------------------------------
 # Parâmetros dos gráficos
 # ---------------------------------------------------------------------
 TOP_N_PESSOAS = 10
@@ -117,6 +109,5 @@ TOP_N_ESPECIES = 10
 TOP_N_JUROS = 10
 
 COR_PRIMARIA = "#1F4E79"
-COR_SECUNDARIA = "#4E88C7"
 ESCALA_CORES = "Blues"
 ALTURA_GRAFICO = 420
