@@ -61,8 +61,6 @@ def main() -> None:
         st.warning("Nenhum título atende aos filtros selecionados.")
         return
 
-    st.session_state["df"] = df_filtrado
-
     aba_cartoes, aba_metricas, aba_dados = st.tabs(
         ["📊 Cartões", "📈 Métricas", "🗂️ Dados"]
     )
