@@ -11,6 +11,7 @@ from config.settings import (
     COLUNA_EMPRESA,
     COLUNA_ESPECIE,
     COLUNA_PESSOA,
+    DIAS_SEMANA,
 )
 
 
@@ -37,6 +38,17 @@ def _rotulo_semana(periodo: pd.Period) -> str:
     inicio = periodo.start_time.strftime("%d/%m")
     fim = periodo.end_time.strftime("%d/%m")
     return f"{inicio} a {fim}"
+
+
+def _rotulo_dia(datas: pd.Series) -> pd.Series:
+    """
+    Converte datas em 'dd/mm (Sáb)'.
+
+    O código %a do strftime segue o idioma do sistema operacional e
+    pode sair em inglês. O dicionário DIAS_SEMANA garante o português.
+    """
+    dia_semana = datas.dt.dayofweek.map(DIAS_SEMANA).str[:3]
+    return datas.dt.strftime("%d/%m") + " (" + dia_semana + ")"
 
 
 def _serie_periodo(datas: pd.Series, granularidade: str) -> Tuple[pd.Series, pd.Series]:
@@ -147,22 +159,6 @@ def concentracao_hierarquica(
     else:
         nivel_1, nivel_2 = "Semana", "Dia"
         base[nivel_1] = base[coluna_data].dt.to_period("W").apply(_rotulo_semana)
-        base[nivel_2] = base[coluna_data].dt.strftime("%d/%m (%a)")
+        base[nivel_2] = _rotulo_dia(base[coluna_data])
 
-    base["_ordem"] = base[coluna_data]
-
-    tabela = (
-        base.groupby([nivel_1, nivel_2])
-        .agg(Total=(coluna_valor, "sum"),
-             Títulos=(coluna_valor, "size"),
-             _ordem=("_ordem", "min"))
-        .sort_values("_ordem")
-        .drop(columns="_ordem")
-    )
-
-    total_geral = tabela["Total"].sum()
-    tabela["% do Total"] = (
-        tabela["Total"] / total_geral * 100 if total_geral else 0
-    )
-
-    return tabela
+    base["_ordem"] =
