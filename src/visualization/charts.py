@@ -12,9 +12,6 @@ from config.settings import (
     ESCALA_CORES,
 )
 
-# Formato monetário aplicado aos eixos e rótulos do Plotly
-FORMATO_MOEDA = "R$ ,.2f"
-
 
 def _aplicar_layout(fig: go.Figure, titulo: str) -> go.Figure:
     fig.update_layout(
@@ -84,23 +81,4 @@ def grafico_barras_horizontal(
     fig.update_xaxes(tickprefix="R$ ", tickformat=",.0f")
     fig.update_yaxes(title=None)
     fig.update_layout(coloraxis_showscale=False)
-    return _aplicar_layout(fig, titulo)
-
-
-def grafico_pizza(dados: pd.DataFrame, coluna_categoria: str, titulo: str) -> go.Figure:
-    """Pizza com participação percentual."""
-    fig = px.pie(
-        dados,
-        names=coluna_categoria,
-        values="Total",
-        hole=0.35,
-        color_discrete_sequence=px.colors.sequential.Blues_r,
-    )
-    fig.update_traces(
-        textposition="inside",
-        textinfo="percent",
-        hovertemplate="<b>%{label}</b><br>Juros: R$ %{value:,.2f}"
-                      "<br>Participação: %{percent}<extra></extra>",
-    )
-    fig.update_layout(showlegend=True)
     return _aplicar_layout(fig, titulo)

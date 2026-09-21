@@ -11,7 +11,6 @@ from config.settings import (
     COLUNA_EMPRESA,
     COLUNA_ESPECIE,
     COLUNA_PESSOA,
-    COLUNAS_VALORES,
 )
 
 
@@ -55,7 +54,7 @@ def _serie_periodo(datas: pd.Series, granularidade: str) -> Tuple[pd.Series, pd.
 
 
 # ---------------------------------------------------------------------
-# 1. Evolução no tempo
+# Evolução no tempo
 # ---------------------------------------------------------------------
 def evolucao_temporal(
     df: pd.DataFrame,
@@ -83,7 +82,7 @@ def evolucao_temporal(
 
 
 # ---------------------------------------------------------------------
-# 2, 4, 5 e 6. Rankings por categoria
+# Rankings por categoria
 # ---------------------------------------------------------------------
 def ranking_por_categoria(
     df: pd.DataFrame,
@@ -122,32 +121,8 @@ def gastos_por_empresa(df: pd.DataFrame, coluna_valor: str) -> pd.DataFrame:
     return agrupado
 
 
-def juros_por_pessoa(df: pd.DataFrame, top_n: int = 8) -> pd.DataFrame:
-    """
-    Pessoas com maiores juros. As demais são agrupadas em 'Outros',
-    para que a pizza continue legível.
-    """
-    coluna_juros = COLUNAS_VALORES["juros"]
-
-    agrupado = (
-        df.groupby(COLUNA_PESSOA, as_index=False)[coluna_juros]
-        .sum()
-        .rename(columns={coluna_juros: "Total"})
-    )
-    agrupado = agrupado[agrupado["Total"] > 0].sort_values("Total", ascending=False)
-
-    if len(agrupado) <= top_n:
-        return agrupado.reset_index(drop=True)
-
-    principais = agrupado.head(top_n).copy()
-    restante = agrupado.iloc[top_n:]["Total"].sum()
-
-    outros = pd.DataFrame([{COLUNA_PESSOA: "Outros", "Total": restante}])
-    return pd.concat([principais, outros], ignore_index=True)
-
-
 # ---------------------------------------------------------------------
-# 3. Concentração hierárquica
+# Concentração hierárquica
 # ---------------------------------------------------------------------
 def concentracao_hierarquica(
     df: pd.DataFrame,

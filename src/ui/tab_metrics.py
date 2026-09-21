@@ -14,14 +14,14 @@ from config.settings import (
     COLUNAS_DATAS,
     COLUNAS_VALORES,
     TOP_N_ESPECIES,
+    TOP_N_JUROS,
     TOP_N_PESSOAS,
-    TOP_N_PIZZA,
 )
 from src.analytics.metrics import (
     concentracao_hierarquica,
     evolucao_temporal,
     gastos_por_empresa,
-    juros_por_pessoa,
+    ranking_por_categoria,
     top_especies,
     top_pessoas,
 )
@@ -29,7 +29,6 @@ from src.visualization.charts import (
     grafico_barras_horizontal,
     grafico_barras_vertical,
     grafico_evolucao,
-    grafico_pizza,
 )
 
 
@@ -103,14 +102,18 @@ def renderizar_aba_metricas(df: pd.DataFrame) -> None:
 
     st.divider()
 
-    # 4. Juros por pessoa
-    dados_juros = juros_por_pessoa(df, TOP_N_PIZZA)
+    # 4. Juros por pessoa (sempre sobre a coluna de juros)
+    dados_juros = ranking_por_categoria(
+        df, COLUNA_PESSOA, COLUNAS_VALORES["juros"], TOP_N_JUROS
+    )
     if dados_juros.empty:
         st.info("Não há juros registrados neste conjunto de dados.")
     else:
         st.plotly_chart(
-            grafico_pizza(
-                dados_juros, COLUNA_PESSOA, "Participação nos juros pagos"
+            grafico_barras_vertical(
+                dados_juros,
+                COLUNA_PESSOA,
+                f"Top {TOP_N_JUROS} pessoas por juros pagos",
             ),
             use_container_width=True,
         )

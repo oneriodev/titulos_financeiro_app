@@ -114,7 +114,7 @@ TOP_N = 5
 # ---------------------------------------------------------------------
 TOP_N_PESSOAS = 10
 TOP_N_ESPECIES = 10
-TOP_N_PIZZA = 8
+TOP_N_JUROS = 10
 
 COR_PRIMARIA = "#1F4E79"
 COR_SECUNDARIA = "#4E88C7"
