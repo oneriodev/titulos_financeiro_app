@@ -16,7 +16,7 @@ from config.settings import (
     COLUNA_PESSOA,
     DIAS_SEMANA,
 )
-from src.processing.schema import normalizar_nomes
+from src.core.processing.schema import normalizar_nomes
 
 
 def _para_numero(serie: pd.Series) -> pd.Series:

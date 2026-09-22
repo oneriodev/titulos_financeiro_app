@@ -17,15 +17,17 @@ from config.settings import (
     TOP_N_JUROS,
     TOP_N_PESSOAS,
 )
-from src.analytics.metrics import (
-    concentracao_hierarquica,
-    evolucao_temporal,
+from src.core.analytics.rankings import (
     gastos_por_empresa,
     ranking_por_categoria,
     top_especies,
     top_pessoas,
 )
-from src.visualization.charts import (
+from src.core.analytics.temporal import (
+    concentracao_hierarquica,
+    evolucao_temporal,
+)
+from src.core.visualization.charts import (
     grafico_barras_horizontal,
     grafico_barras_vertical,
     grafico_evolucao,

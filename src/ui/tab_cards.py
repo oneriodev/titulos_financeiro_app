@@ -7,7 +7,7 @@ import streamlit as st
 
 from config.settings import ROTULOS_CARTOES
 from src.analytics.kpis import calcular_totais, contar_registros
-from src.ui.components import cartao, formatar_inteiro, formatar_moeda
+from src.core.ui.components import cartao, formatar_inteiro, formatar_moeda
 
 # Ordem de exibição dos cartões, em duas linhas de quatro
 ORDEM_CARTOES = [

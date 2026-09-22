@@ -7,12 +7,12 @@ import pandas as pd
 import streamlit as st
 
 from config.settings import APP_TITLE, APP_ICON, LAYOUT, SUBTITULO
-from src.extraction.file_reader import ler_arquivo
-from src.processing.cleaning import limpar_dados
-from src.processing.filters import aplicar_filtros
-from src.processing.schema import validar_colunas
-from src.ui.components import formatar_inteiro
-from src.ui.sidebar import renderizar_filtros, renderizar_sidebar
+from src.core.extraction.file_reader import ler_arquivo
+from src.core.processing.cleaning import limpar_dados
+from src.core.processing.filters import aplicar_filtros
+from src.core.processing.schema import validar_colunas
+from src.core.ui.components import formatar_inteiro
+from src.core.ui.sidebar import renderizar_filtros, renderizar_sidebar
 from src.ui.tab_cards import renderizar_aba_cartoes
 from src.ui.tab_metrics import renderizar_aba_metricas
 

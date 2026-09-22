@@ -14,7 +14,7 @@ from config.settings import (
     EXTENSOES_ACEITAS,
     TAMANHO_MAX_MB,
 )
-from src.processing.filters import Filtros
+from src.core.processing.filters import Filtros
 
 CHAVE_PERIODO = "filtro_periodo"
 CHAVE_EMPRESAS = "filtro_empresas"
