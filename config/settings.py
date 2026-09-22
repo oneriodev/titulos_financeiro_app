@@ -1,6 +1,9 @@
 """
 Configurações e constantes centrais do projeto.
-Nomes de colunas confirmados a partir da exportação real do Consinco.
+
+As colunas usam um vocabulário padronizado. Cada relatório do Consinco
+é renomeado para esse vocabulário logo após a leitura, de modo que o
+restante do código não depende dos nomes originais de cada exportação.
 """
 
 # ---------------------------------------------------------------------
@@ -24,17 +27,17 @@ ENCODINGS_TENTATIVAS = ["utf-8", "cp1252", "latin-1"]
 SEPARADORES_TENTATIVAS = ["\t", ";", "|", ","]
 
 # ---------------------------------------------------------------------
-# Colunas de identificação
+# Vocabulário padronizado — identificação
 # ---------------------------------------------------------------------
 COLUNA_PESSOA = "Pessoa"
 COLUNA_ESPECIE = "Espécie"
-COLUNA_EMPRESA = "Nro Empresa"
+COLUNA_EMPRESA = "Empresa"
 
 # ---------------------------------------------------------------------
-# Colunas de data
+# Vocabulário padronizado — datas
 # ---------------------------------------------------------------------
 COLUNA_DT_EMISSAO = "Dt. Emissão"
-COLUNA_DT_VENCIMENTO = "Vencimento Programado"
+COLUNA_DT_VENCIMENTO = "Dt. Vencimento"
 COLUNA_DT_MOVIMENTO = "Dt. Movimento"
 COLUNA_DT_QUITACAO = "Dt. Quitação"
 
@@ -49,7 +52,7 @@ COLUNAS_DATAS = [
 COLUNA_DATA_PADRAO = COLUNA_DT_QUITACAO
 
 # ---------------------------------------------------------------------
-# Colunas de valores — chave interna -> nome no arquivo
+# Vocabulário padronizado — valores (chave interna -> nome padronizado)
 # ---------------------------------------------------------------------
 COLUNAS_VALORES = {
     "original": "Vlr Original",
@@ -59,7 +62,7 @@ COLUNAS_VALORES = {
     "abatimento": "Vlr Abatimento",
     "compensacao": "Vlr Compensação",
     "pago": "Vlr Pago",
-    "liquido": "Vlr Liquido",
+    "liquido": "Vlr Líquido",
 }
 
 # Rótulos exibidos nos cartões
@@ -78,6 +81,16 @@ ROTULOS_CARTOES = {
 COLUNA_VALOR_PADRAO = COLUNAS_VALORES["liquido"]
 
 # ---------------------------------------------------------------------
+# Relatório de títulos quitados: nome no arquivo -> nome padronizado
+# Colunas com nome já igual ao padronizado não precisam constar aqui.
+# ---------------------------------------------------------------------
+RENOMEAR_QUITADOS = {
+    "Nro Empresa": COLUNA_EMPRESA,
+    "Vencimento Programado": COLUNA_DT_VENCIMENTO,
+    "Vlr Liquido": COLUNAS_VALORES["liquido"],
+}
+
+# ---------------------------------------------------------------------
 # Colunas auxiliares (descartadas ou derivadas no tratamento)
 # ---------------------------------------------------------------------
 COLUNAS_DESCARTADAS = ["Column1"]
@@ -94,7 +107,7 @@ DIAS_SEMANA = {
     6: "Domingo",
 }
 
-# Mínimo necessário para a aplicação funcionar
+# Mínimo necessário para a aplicação funcionar (nomes padronizados)
 COLUNAS_OBRIGATORIAS = [
     COLUNA_PESSOA,
     COLUNA_ESPECIE,

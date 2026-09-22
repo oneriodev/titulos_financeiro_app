@@ -1,5 +1,5 @@
 """
-Tratamento dos dados: tipos, colunas descartadas e colunas derivadas.
+Tratamento dos dados: nomes, tipos, colunas descartadas e colunas derivadas.
 """
 
 import pandas as pd
@@ -15,8 +15,9 @@ from config.settings import (
     COLUNA_ESPECIE,
     COLUNA_PESSOA,
     DIAS_SEMANA,
+    RENOMEAR_QUITADOS,
 )
-from src.core.processing.schema import normalizar_nomes
+from src.core.processing.schema import normalizar_nomes, renomear_colunas
 
 
 def _para_numero(serie: pd.Series) -> pd.Series:
@@ -56,6 +57,7 @@ def limpar_dados(df: pd.DataFrame) -> pd.DataFrame:
     Aplica o tratamento completo e devolve o DataFrame pronto para análise.
     """
     df = normalizar_nomes(df)
+    df = renomear_colunas(df, RENOMEAR_QUITADOS)
 
     # Remove colunas fantasma da exportação e as 100% vazias
     df = df.drop(columns=[c for c in COLUNAS_DESCARTADAS if c in df.columns])
