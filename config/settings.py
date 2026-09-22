@@ -32,6 +32,7 @@ SEPARADORES_TENTATIVAS = ["\t", ";", "|", ","]
 COLUNA_PESSOA = "Pessoa"
 COLUNA_ESPECIE = "Espécie"
 COLUNA_EMPRESA = "Empresa"
+COLUNA_DIAS_ATRASO = "Dias de Atraso"
 
 # ---------------------------------------------------------------------
 # Vocabulário padronizado — datas
@@ -64,6 +65,8 @@ COLUNAS_VALORES = {
     "pago": "Vlr Pago",
     "liquido": "Vlr Líquido",
 }
+COLUNA_VLR_ABERTO = "Vlr Aberto"
+COLUNA_VLR_TAXA_ADM = "Vlr Taxa Adm."
 
 # Rótulos exibidos nos cartões
 ROTULOS_CARTOES = {
@@ -81,19 +84,8 @@ ROTULOS_CARTOES = {
 COLUNA_VALOR_PADRAO = COLUNAS_VALORES["liquido"]
 
 # ---------------------------------------------------------------------
-# Relatório de títulos quitados: nome no arquivo -> nome padronizado
-# Colunas com nome já igual ao padronizado não precisam constar aqui.
-# ---------------------------------------------------------------------
-RENOMEAR_QUITADOS = {
-    "Nro Empresa": COLUNA_EMPRESA,
-    "Vencimento Programado": COLUNA_DT_VENCIMENTO,
-    "Vlr Liquido": COLUNAS_VALORES["liquido"],
-}
-
-# ---------------------------------------------------------------------
 # Colunas auxiliares (descartadas ou derivadas no tratamento)
 # ---------------------------------------------------------------------
-COLUNAS_DESCARTADAS = ["Column1"]
 COLUNA_ANO_MES = "Ano-Mês"
 COLUNA_DIA_SEMANA = "Dia da Semana"
 
@@ -106,13 +98,6 @@ DIAS_SEMANA = {
     5: "Sábado",
     6: "Domingo",
 }
-
-# Mínimo necessário para a aplicação funcionar (nomes padronizados)
-COLUNAS_OBRIGATORIAS = [
-    COLUNA_PESSOA,
-    COLUNA_ESPECIE,
-    COLUNA_DT_QUITACAO,
-] + list(COLUNAS_VALORES.values())
 
 # ---------------------------------------------------------------------
 # Parâmetros dos gráficos

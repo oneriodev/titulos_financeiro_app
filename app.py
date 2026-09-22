@@ -7,7 +7,9 @@ import pandas as pd
 import streamlit as st
 
 from config.settings import APP_TITLE, APP_ICON, LAYOUT, SUBTITULO
+from src.analises.quitados.layout import LAYOUT_QUITADOS
 from src.core.extraction.file_reader import ler_arquivo
+from src.core.layout import Layout
 from src.core.processing.cleaning import limpar_dados
 from src.core.processing.filters import aplicar_filtros
 from src.core.processing.schema import validar_colunas
@@ -20,15 +22,17 @@ st.set_page_config(page_title=APP_TITLE, page_icon=APP_ICON, layout=LAYOUT)
 
 
 @st.cache_data(show_spinner="Processando arquivo...")
-def carregar_dados(arquivo) -> pd.DataFrame:
-    """Lê e trata o arquivo. O cache evita reprocessar a cada interação."""
+def carregar_dados(arquivo, layout: Layout) -> pd.DataFrame:
+    """Lê e trata o arquivo conforme o layout. O cache considera os dois."""
     bruto = ler_arquivo(arquivo)
-    return limpar_dados(bruto)
+    return limpar_dados(bruto, layout)
 
 
 def main() -> None:
     st.title(f"{APP_ICON} {APP_TITLE}")
     st.caption(SUBTITULO)
+
+    layout = LAYOUT_QUITADOS
 
     arquivo = renderizar_sidebar()
 
@@ -37,18 +41,18 @@ def main() -> None:
         return
 
     try:
-        df = carregar_dados(arquivo)
+        df = carregar_dados(arquivo, layout)
     except Exception as erro:
         st.error(f"Falha ao processar o arquivo: {erro}")
         return
 
-    valido, faltantes = validar_colunas(df)
+    valido, faltantes = validar_colunas(df, layout.obrigatorias)
     if not valido:
         st.error(f"Colunas obrigatórias ausentes: {', '.join(faltantes)}")
         return
 
-    filtros = renderizar_filtros(df, arquivo.name)
-    df_filtrado = aplicar_filtros(df, filtros)
+    filtros = renderizar_filtros(df, arquivo.name, layout.data_referencia)
+    df_filtrado = aplicar_filtros(df, filtros, layout.data_referencia)
 
     if filtros.quantidade_ativos:
         st.caption(

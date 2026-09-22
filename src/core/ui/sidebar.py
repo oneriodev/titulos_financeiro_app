@@ -8,7 +8,6 @@ import pandas as pd
 import streamlit as st
 
 from config.settings import (
-    COLUNA_DATA_PADRAO,
     COLUNA_EMPRESA,
     COLUNA_ESPECIE,
     EXTENSOES_ACEITAS,
@@ -98,7 +97,9 @@ def _limpar_filtros() -> None:
         st.session_state.pop(chave, None)
 
 
-def renderizar_filtros(df: pd.DataFrame, nome_arquivo: str) -> Filtros:
+def renderizar_filtros(
+    df: pd.DataFrame, nome_arquivo: str, coluna_data: str
+) -> Filtros:
     """
     Desenha os filtros com base nos valores existentes no arquivo
     e devolve as seleções do usuário.

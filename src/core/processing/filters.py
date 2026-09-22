@@ -9,8 +9,7 @@ from typing import List, Optional
 
 import pandas as pd
 
-from config.settings import COLUNA_DATA_PADRAO, COLUNA_EMPRESA, COLUNA_ESPECIE
-
+from config.settings import COLUNA_EMPRESA, COLUNA_ESPECIE
 
 @dataclass
 class Filtros:
@@ -28,11 +27,16 @@ class Filtros:
         return sum([periodo, bool(self.empresas), bool(self.especies)])
 
 
-def aplicar_filtros(df: pd.DataFrame, filtros: Filtros) -> pd.DataFrame:
-    """Devolve apenas as linhas que atendem a todos os filtros ativos."""
+def aplicar_filtros(
+    df: pd.DataFrame, filtros: Filtros, coluna_data: str
+) -> pd.DataFrame:
+    """
+    Devolve apenas as linhas que atendem a todos os filtros ativos.
+    coluna_data define a data do filtro de período.
+    """
     mascara = pd.Series(True, index=df.index)
 
-    datas = df[COLUNA_DATA_PADRAO].dt.date
+    datas = df[coluna_data].dt.date
 
     if filtros.data_inicio is not None:
         mascara &= datas >= filtros.data_inicio

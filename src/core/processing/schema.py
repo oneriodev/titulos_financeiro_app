@@ -6,9 +6,6 @@ from typing import Dict, List, Tuple
 
 import pandas as pd
 
-from config.settings import COLUNAS_OBRIGATORIAS
-
-
 def normalizar_nomes(df: pd.DataFrame) -> pd.DataFrame:
     """Remove espaços extras dos nomes das colunas."""
     df = df.copy()

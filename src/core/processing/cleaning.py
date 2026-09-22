@@ -1,22 +1,12 @@
 """
 Tratamento dos dados: nomes, tipos, colunas descartadas e colunas derivadas.
+As regras específicas de cada relatório vêm do Layout recebido.
 """
 
 import pandas as pd
 
-from config.settings import (
-    COLUNAS_DATAS,
-    COLUNAS_DESCARTADAS,
-    COLUNAS_VALORES,
-    COLUNA_ANO_MES,
-    COLUNA_DATA_PADRAO,
-    COLUNA_DIA_SEMANA,
-    COLUNA_EMPRESA,
-    COLUNA_ESPECIE,
-    COLUNA_PESSOA,
-    DIAS_SEMANA,
-    RENOMEAR_QUITADOS,
-)
+from config.settings import COLUNA_ANO_MES, COLUNA_DIA_SEMANA, DIAS_SEMANA
+from src.core.layout import Layout
 from src.core.processing.schema import normalizar_nomes, renomear_colunas
 
 
@@ -52,44 +42,40 @@ def _para_inteiro(serie: pd.Series) -> pd.Series:
     return pd.to_numeric(serie, errors="coerce").astype("Int64")
 
 
-def limpar_dados(df: pd.DataFrame) -> pd.DataFrame:
+def limpar_dados(df: pd.DataFrame, layout: Layout) -> pd.DataFrame:
     """
     Aplica o tratamento completo e devolve o DataFrame pronto para análise.
     """
     df = normalizar_nomes(df)
-    df = renomear_colunas(df, RENOMEAR_QUITADOS)
+    df = renomear_colunas(df, layout.renomear)
 
     # Remove colunas fantasma da exportação e as 100% vazias
-    df = df.drop(columns=[c for c in COLUNAS_DESCARTADAS if c in df.columns])
+    df = df.drop(columns=[c for c in layout.descartadas if c in df.columns])
     df = df.dropna(axis=1, how="all")
 
     # Remove linhas totalmente vazias
     df = df.dropna(how="all")
 
-    # Datas
-    for coluna in COLUNAS_DATAS:
+    for coluna in layout.datas:
         if coluna in df.columns:
-            df[coluna] = pd.to_datetime(
-                df[coluna], dayfirst=True, errors="coerce"
-            )
+            df[coluna] = pd.to_datetime(df[coluna], dayfirst=True, errors="coerce")
 
-    # Valores monetários
-    for coluna in COLUNAS_VALORES.values():
+    for coluna in layout.valores.values():
         if coluna in df.columns:
             df[coluna] = _para_numero(df[coluna])
 
-    # Códigos numéricos
-    if COLUNA_EMPRESA in df.columns:
-        df[COLUNA_EMPRESA] = _para_inteiro(df[COLUNA_EMPRESA])
+    for coluna in layout.inteiros:
+        if coluna in df.columns:
+            df[coluna] = _para_inteiro(df[coluna])
 
-    # Texto
-    for coluna in (COLUNA_PESSOA, COLUNA_ESPECIE):
+    for coluna in layout.textos:
         if coluna in df.columns:
             df[coluna] = df[coluna].astype(str).str.strip()
 
-    # Colunas derivadas para os gráficos
-    if COLUNA_DATA_PADRAO in df.columns:
-        df[COLUNA_ANO_MES] = df[COLUNA_DATA_PADRAO].dt.to_period("M").astype(str)
-        df[COLUNA_DIA_SEMANA] = df[COLUNA_DATA_PADRAO].dt.dayofweek.map(DIAS_SEMANA)
+    # Colunas derivadas da data de referência
+    data_ref = layout.data_referencia
+    if data_ref in df.columns:
+        df[COLUNA_ANO_MES] = df[data_ref].dt.to_period("M").astype(str)
+        df[COLUNA_DIA_SEMANA] = df[data_ref].dt.dayofweek.map(DIAS_SEMANA)
 
     return df.reset_index(drop=True)
