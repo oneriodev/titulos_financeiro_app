@@ -1,8 +1,8 @@
 """
-Barra lateral da aplicação: upload do arquivo e filtros.
+Barra lateral da aplicação: escolha da análise, upload do arquivo e filtros.
 """
 
-from typing import Optional
+from typing import List, Optional
 
 import pandas as pd
 import streamlit as st
@@ -15,6 +15,8 @@ from config.settings import (
 )
 from src.core.processing.filters import Filtros
 
+CHAVE_ANALISE = "analise_selecionada"
+CHAVE_ANALISE_ANTERIOR = "_analise_anterior"
 CHAVE_PERIODO = "filtro_periodo"
 CHAVE_EMPRESAS = "filtro_empresas"
 CHAVE_ESPECIES = "filtro_especies"
@@ -27,23 +29,61 @@ CHAVE_VERSAO_UPLOADER = "_versao_uploader"
 
 
 # ---------------------------------------------------------------------
+# Estado
+# ---------------------------------------------------------------------
+def _limpar_filtros() -> None:
+    for chave in CHAVES_FILTROS:
+        st.session_state.pop(chave, None)
+
+
+def _descartar_arquivo_e_filtros() -> None:
+    """
+    Descarta o arquivo carregado e zera os filtros, preservando a
+    análise escolhida. Incrementar a versão do uploader é o que faz
+    o Streamlit esquecer o arquivo.
+    """
+    _limpar_filtros()
+    st.session_state.pop(CHAVE_ARQUIVO, None)
+    st.session_state[CHAVE_VERSAO_UPLOADER] = (
+        st.session_state.get(CHAVE_VERSAO_UPLOADER, 0) + 1
+    )
+
+
+# ---------------------------------------------------------------------
+# Escolha da análise
+# ---------------------------------------------------------------------
+def selecionar_analise(opcoes: List[str]) -> str:
+    """
+    Desenha o seletor de análise e devolve a escolha.
+
+    Ao trocar de análise, o arquivo e os filtros são descartados: um
+    relatório de quitados não serve para a análise de abertos.
+    """
+    with st.sidebar:
+        st.header("Análise")
+        escolha = st.radio(
+            "Tipo de análise",
+            options=opcoes,
+            key=CHAVE_ANALISE,
+            label_visibility="collapsed",
+        )
+
+    anterior = st.session_state.get(CHAVE_ANALISE_ANTERIOR)
+    st.session_state[CHAVE_ANALISE_ANTERIOR] = escolha
+
+    if anterior is not None and anterior != escolha:
+        _descartar_arquivo_e_filtros()
+        st.rerun()
+
+    return escolha
+
+
+# ---------------------------------------------------------------------
 # Upload
 # ---------------------------------------------------------------------
 def _tamanho_em_mb(arquivo) -> float:
     """Retorna o tamanho do arquivo enviado em megabytes."""
     return arquivo.size / (1024 * 1024)
-
-
-def _limpar_dados() -> None:
-    """
-    Zera todo o estado da aplicação e descarta o arquivo carregado.
-
-    O contador de versão é preservado e incrementado, para que o
-    uploader receba uma chave nova após o clear().
-    """
-    proxima_versao = st.session_state.get(CHAVE_VERSAO_UPLOADER, 0) + 1
-    st.session_state.clear()
-    st.session_state[CHAVE_VERSAO_UPLOADER] = proxima_versao
 
 
 def renderizar_sidebar() -> Optional[object]:
@@ -55,6 +95,7 @@ def renderizar_sidebar() -> Optional[object]:
     versao = st.session_state.setdefault(CHAVE_VERSAO_UPLOADER, 0)
 
     with st.sidebar:
+        st.divider()
         st.header("📂 Importar dados")
 
         arquivo = st.file_uploader(
@@ -83,7 +124,7 @@ def renderizar_sidebar() -> Optional[object]:
         st.caption(f"**{arquivo.name}** — {tamanho:.2f} MB")
 
         if st.button("🗑️ Limpar dados", width="stretch"):
-            _limpar_dados()
+            _descartar_arquivo_e_filtros()
             st.rerun()
 
         return arquivo
@@ -92,17 +133,14 @@ def renderizar_sidebar() -> Optional[object]:
 # ---------------------------------------------------------------------
 # Filtros
 # ---------------------------------------------------------------------
-def _limpar_filtros() -> None:
-    for chave in CHAVES_FILTROS:
-        st.session_state.pop(chave, None)
-
-
 def renderizar_filtros(
     df: pd.DataFrame, nome_arquivo: str, coluna_data: str
 ) -> Filtros:
     """
     Desenha os filtros com base nos valores existentes no arquivo
     e devolve as seleções do usuário.
+
+    coluna_data define sobre qual data o filtro de período atua.
     """
     # Um arquivo novo pode ter outro intervalo de datas e outras empresas.
     # Filtros antigos causariam erro ou esconderiam dados, então são zerados.
@@ -110,8 +148,8 @@ def renderizar_filtros(
         _limpar_filtros()
         st.session_state[CHAVE_ARQUIVO] = nome_arquivo
 
-    data_min = df[COLUNA_DATA_PADRAO].min().date()
-    data_max = df[COLUNA_DATA_PADRAO].max().date()
+    data_min = df[coluna_data].min().date()
+    data_max = df[coluna_data].max().date()
 
     empresas = sorted(int(e) for e in df[COLUNA_EMPRESA].dropna().unique())
     especies = sorted(df[COLUNA_ESPECIE].dropna().unique())
@@ -126,7 +164,7 @@ def renderizar_filtros(
             st.rerun()
 
         periodo = st.date_input(
-            f"Período ({COLUNA_DATA_PADRAO})",
+            f"Período ({coluna_data})",
             value=(data_min, data_max),
             min_value=data_min,
             max_value=data_max,

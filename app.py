@@ -7,14 +7,18 @@ import pandas as pd
 import streamlit as st
 
 from config.settings import APP_TITLE, APP_ICON, LAYOUT, SUBTITULO
-from src.analises.quitados.layout import LAYOUT_QUITADOS
+from src.analises.registro import ANALISES, QUITADOS, sugerir_analise
 from src.core.extraction.file_reader import ler_arquivo
 from src.core.layout import Layout
 from src.core.processing.cleaning import limpar_dados
 from src.core.processing.filters import aplicar_filtros
 from src.core.processing.schema import validar_colunas
 from src.core.ui.components import formatar_inteiro
-from src.core.ui.sidebar import renderizar_filtros, renderizar_sidebar
+from src.core.ui.sidebar import (
+    renderizar_filtros,
+    renderizar_sidebar,
+    selecionar_analise,
+)
 from src.ui.tab_cards import renderizar_aba_cartoes
 from src.ui.tab_metrics import renderizar_aba_metricas
 
@@ -32,27 +36,42 @@ def main() -> None:
     st.title(f"{APP_ICON} {APP_TITLE}")
     st.caption(SUBTITULO)
 
-    layout = LAYOUT_QUITADOS
+    analise = ANALISES[selecionar_analise(list(ANALISES))]
 
     arquivo = renderizar_sidebar()
 
     if arquivo is None:
-        st.info("⬅️ Importe um arquivo na barra lateral para iniciar a análise.")
+        st.info(
+            f"⬅️ Importe o relatório de **{analise.nome}** na barra lateral "
+            "para iniciar a análise."
+        )
         return
 
     try:
-        df = carregar_dados(arquivo, layout)
+        df = carregar_dados(arquivo, analise.layout)
     except Exception as erro:
         st.error(f"Falha ao processar o arquivo: {erro}")
         return
 
-    valido, faltantes = validar_colunas(df, layout.obrigatorias)
+    valido, faltantes = validar_colunas(df, analise.layout.obrigatorias)
     if not valido:
-        st.error(f"Colunas obrigatórias ausentes: {', '.join(faltantes)}")
+        sugestao = sugerir_analise(df)
+        if sugestao and sugestao != analise.nome:
+            st.error(
+                f"Este arquivo parece ser o relatório de **{sugestao}**, "
+                f"mas a análise selecionada é **{analise.nome}**. "
+                "Troque a análise na barra lateral ou importe o outro arquivo."
+            )
+        else:
+            st.error(f"Colunas obrigatórias ausentes: {', '.join(faltantes)}")
         return
 
-    filtros = renderizar_filtros(df, arquivo.name, layout.data_referencia)
-    df_filtrado = aplicar_filtros(df, filtros, layout.data_referencia)
+    if analise.preparo is not None:
+        df = analise.preparo(df)
+
+    coluna_data = analise.layout.data_referencia
+    filtros = renderizar_filtros(df, arquivo.name, coluna_data)
+    df_filtrado = aplicar_filtros(df, filtros, coluna_data)
 
     if filtros.quantidade_ativos:
         st.caption(
@@ -65,15 +84,17 @@ def main() -> None:
         st.warning("Nenhum título atende aos filtros selecionados.")
         return
 
-    aba_cartoes, aba_metricas, aba_dados = st.tabs(
-        ["📊 Cartões", "📈 Métricas", "🗂️ Dados"]
-    )
-
-    with aba_cartoes:
-        renderizar_aba_cartoes(df_filtrado)
-
-    with aba_metricas:
-        renderizar_aba_metricas(df_filtrado)
+    if analise.nome == QUITADOS:
+        aba_cartoes, aba_metricas, aba_dados = st.tabs(
+            ["📊 Cartões", "📈 Métricas", "🗂️ Dados"]
+        )
+        with aba_cartoes:
+            renderizar_aba_cartoes(df_filtrado)
+        with aba_metricas:
+            renderizar_aba_metricas(df_filtrado)
+    else:
+        # As abas dos títulos em aberto entram nos próximos passos
+        (aba_dados,) = st.tabs(["🗂️ Dados"])
 
     with aba_dados:
         st.write(

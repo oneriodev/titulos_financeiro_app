@@ -70,3 +70,12 @@ def preparar_abertos(df: pd.DataFrame, data_corte: pd.Timestamp) -> pd.DataFrame
     )
 
     return df
+
+def preparar(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Preparo completo dos abertos, com a data de corte deduzida do arquivo.
+
+    Aplicado antes dos filtros: se rodasse depois, um filtro que
+    escondesse os títulos vencidos mudaria a data de corte.
+    """
+    return preparar_abertos(df, obter_data_corte(df))
