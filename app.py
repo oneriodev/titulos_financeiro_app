@@ -13,6 +13,7 @@ from src.core.layout import Layout
 from src.core.processing.cleaning import limpar_dados
 from src.core.processing.filters import aplicar_filtros
 from src.core.processing.schema import validar_colunas
+from src.analises.abertos.tab_vencimentos import renderizar_aba_vencimentos
 from src.core.ui.components import formatar_inteiro
 from src.core.ui.sidebar import (
     renderizar_filtros,
@@ -97,9 +98,13 @@ def main() -> None:
         with aba_metricas:
             renderizar_aba_metricas(df_filtrado)
     else:
-        aba_resumo, aba_dados = st.tabs(["📋 Resumo", "🗂️ Dados"])
+        aba_resumo, aba_vencimentos, aba_dados = st.tabs(
+            ["📋 Resumo", "📅 Vencimentos", "🗂️ Dados"]
+        )
         with aba_resumo:
             renderizar_aba_resumo(df_filtrado, data_corte)
+        with aba_vencimentos:
+            renderizar_aba_vencimentos(df_filtrado, data_corte)
 
     with aba_dados:
         st.write(
