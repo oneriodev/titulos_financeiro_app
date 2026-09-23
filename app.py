@@ -21,6 +21,8 @@ from src.core.ui.sidebar import (
 )
 from src.ui.tab_cards import renderizar_aba_cartoes
 from src.ui.tab_metrics import renderizar_aba_metricas
+from src.analises.abertos.preparo import obter_data_corte
+from src.analises.abertos.tab_resumo import renderizar_aba_resumo
 
 st.set_page_config(page_title=APP_TITLE, page_icon=APP_ICON, layout=LAYOUT)
 
@@ -66,7 +68,9 @@ def main() -> None:
             st.error(f"Colunas obrigatórias ausentes: {', '.join(faltantes)}")
         return
 
+        data_corte = None
     if analise.preparo is not None:
+        data_corte = obter_data_corte(df)
         df = analise.preparo(df)
 
     coluna_data = analise.layout.data_referencia
@@ -93,8 +97,9 @@ def main() -> None:
         with aba_metricas:
             renderizar_aba_metricas(df_filtrado)
     else:
-        # As abas dos títulos em aberto entram nos próximos passos
-        (aba_dados,) = st.tabs(["🗂️ Dados"])
+        aba_resumo, aba_dados = st.tabs(["📋 Resumo", "🗂️ Dados"])
+        with aba_resumo:
+            renderizar_aba_resumo(df_filtrado, data_corte)
 
     with aba_dados:
         st.write(
