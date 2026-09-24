@@ -1,21 +1,26 @@
 # 💰 Análise de Títulos Financeiros
 
-Data app desenvolvido em **Python + Streamlit** para análise de títulos **abertos e quitados** do setor financeiro, a partir de relatórios exportados do ERP **Consinco (TOTVS)**.
+Data app desenvolvido em **Python + Streamlit** para análise de títulos **quitados** e **em aberto** do setor financeiro, a partir de relatórios exportados do ERP **Consinco (TOTVS)**.
 
-A aplicação transforma um relatório com milhares de linhas em indicadores e gráficos interativos, respondendo perguntas recorrentes do contas a pagar: quanto foi pago no período, quais fornecedores concentram os gastos, em quais dias o desembolso se acumula e onde estão os juros.
+A aplicação transforma relatórios com milhares de linhas em indicadores e gráficos interativos, respondendo as perguntas recorrentes do contas a pagar:
+
+- **Olhando para trás:** quanto foi pago no período, quais fornecedores concentram o desembolso, em quais dias ele se acumula e onde estão os juros.
+- **Olhando para frente:** quanto está vencido, quanto vence nos próximos dias e como o desembolso progride até o fim do período.
 
 ---
 
 ## ✨ Funcionalidades
 
 ### 📂 Importação de dados
-- Upload pela barra lateral, com arrastar e soltar
-- Formatos aceitos: **XLSX**, **CSV** e **TXT** (leitura de PDF em desenvolvimento)
+- Seletor de análise na barra lateral: **Títulos Quitados** ou **Títulos Abertos**
+- Upload com arrastar e soltar, aceitando **XLSX**, **CSV** e **TXT** (PDF em desenvolvimento)
 - Detecção automática de codificação (`UTF-8`, `CP1252`, `Latin-1`) e separador em arquivos de texto
-- Validação das colunas obrigatórias antes de qualquer cálculo
+- Aviso quando o relatório importado não corresponde à análise escolhida
+- Filtros por **período**, **empresa** e **espécie**, aplicados a todos os indicadores e gráficos
 
-### 📊 Aba Cartões
-Totais gerais do conjunto de dados:
+### 📊 Títulos Quitados
+
+**Aba Cartões** — totais gerais do período:
 
 | Indicador | Indicador |
 |---|---|
@@ -26,18 +31,32 @@ Totais gerais do conjunto de dados:
 
 Além da quantidade de títulos e do valor líquido médio por título.
 
-### 📈 Aba Métricas
-- **Evolução dos gastos no tempo**, com granularidade automática: mensal quando a base abrange vários meses, semanal quando abrange um único mês
-- **Top 10 pessoas** (fornecedores/favorecidos) com maiores gastos
-- **Tabela hierárquica** de concentração de gastos por semana e dia (ou mês e semana)
-- **Participação nos juros** por pessoa, em gráfico de pizza
-- **Top espécies** de título por gasto
-- **Gastos por empresa**, ordenados do maior para o menor
+**Aba Métricas**
+- Evolução dos gastos no tempo, com granularidade automática (mensal ou semanal, conforme o intervalo da base)
+- Top 10 pessoas por gasto
+- Tabela hierárquica de concentração por semana e dia (ou mês e semana)
+- Top 10 pessoas por juros pagos
+- Top 10 espécies de título
+- Comparativo entre as empresas do grupo
 
 Seletores permitem trocar o valor analisado (Líquido, Pago, Original etc.) e a data de referência (Quitação, Emissão, Vencimento ou Movimento).
 
+### 📋 Títulos em Aberto
+
+**Aba Resumo**
+- Composição da carteira: Original, Em Aberto, Desconto e Líquido
+- Títulos com pagamento parcial
+- Vencidos × a vencer, em valor e quantidade
+- Desembolso dos próximos 7 dias
+- Valor médio por título e maior título, com alerta quando um único título concentra mais de 10% da carteira
+
+**Aba Vencimentos**
+- **Progressão do desembolso:** barras com o valor de cada dia de vencimento e linha com o total acumulado, com os dias vencidos destacados e uma marcação na data do relatório
+- Distribuição por faixa de prazo (vencido, vence hoje, 1 a 7, 8 a 15, 16 a 30 e acima de 30 dias)
+- Concentração por dia da semana do vencimento
+
 ### 🗂️ Aba Dados
-Visualização da base tratada, com busca e ordenação.
+Disponível nas duas análises: a base tratada, com busca e ordenação.
 
 ---
 
@@ -54,50 +73,44 @@ Visualização da base tratada, com busca e ordenação.
 
 ---
 
-## 📁 Estrutura do projeto
+## 🏗️ Arquitetura
 
-O código é organizado em camadas, para que uma mudança no formato do relatório afete apenas a camada de extração, sem quebrar cálculos e gráficos.
+O projeto é dividido em duas partes:
+
+**Núcleo compartilhado (`src/core/`)** — o que vale para qualquer relatório: leitura de arquivos, tratamento, filtros, rankings, agregações temporais, gráficos e componentes de interface.
+
+**Módulos de análise (`src/analises/`)** — uma pasta por análise, com o layout do seu relatório, os cálculos e as telas.
+
+A ligação entre as duas partes é o objeto **`Layout`**, que descreve um relatório: como renomear suas colunas para o vocabulário padronizado, quais são as datas, os valores e as colunas obrigatórias, e qual data serve de referência para filtros e gráficos. O núcleo recebe essas regras por parâmetro e não conhece nenhuma análise em particular — adicionar um novo relatório é declarar um layout, não duplicar código.
 
 ```
 titulos_financeiro_app/
 │
-├── app.py                      # Ponto de entrada da aplicação
+├── app.py                          # Roteia a análise escolhida
 ├── requirements.txt
 ├── README.md
 │
-├── .streamlit/
-│   └── config.toml             # Tema e configurações do Streamlit
-│
-├── config/
-│   └── settings.py             # Constantes: colunas, formatos, parâmetros
+├── .streamlit/config.toml          # Tema e configurações do Streamlit
+├── config/settings.py              # Vocabulário de colunas e parâmetros gerais
 │
 ├── src/
-│   ├── extraction/             # 1. Leitura dos arquivos
-│   │   ├── file_reader.py      #    Roteador por extensão (XLSX, CSV, TXT)
-│   │   ├── txt_reader.py
-│   │   └── pdf_reader.py
+│   ├── core/                       # NÚCLEO COMPARTILHADO
+│   │   ├── layout.py               #   Descrição de um relatório
+│   │   ├── extraction/             #   Leitura por extensão (XLSX, CSV, TXT, PDF)
+│   │   ├── processing/             #   Tratamento, validação e filtros
+│   │   ├── analytics/              #   Agregações temporais e rankings
+│   │   ├── visualization/          #   Gráficos
+│   │   └── ui/                     #   Barra lateral e componentes
 │   │
-│   ├── processing/             # 2. Tratamento
-│   │   ├── cleaning.py         #    Tipos, datas, valores e colunas derivadas
-│   │   └── schema.py           #    Validação da estrutura
+│   ├── analises/
+│   │   ├── registro.py             #   Análises disponíveis
+│   │   ├── quitados/layout.py
+│   │   └── abertos/                #   Layout, preparo, indicadores e abas
 │   │
-│   ├── analytics/              # 3. Cálculos
-│   │   ├── kpis.py             #    Totais dos cartões
-│   │   └── metrics.py          #    Agregações dos gráficos
-│   │
-│   ├── visualization/          # 4. Gráficos
-│   │   └── charts.py
-│   │
-│   └── ui/                     # 5. Interface
-│       ├── sidebar.py
-│       ├── tab_cards.py
-│       ├── tab_metrics.py
-│       └── components.py
+│   └── ui/                         # Abas dos títulos quitados
 │
 ├── assets/
-├── data/                       # Não versionada
-│   ├── raw/
-│   └── processed/
+├── data/                           # Não versionada
 ├── notebooks/
 └── tests/
 ```
@@ -105,7 +118,8 @@ titulos_financeiro_app/
 Fluxo dos dados:
 
 ```
-Upload → Extração → Tratamento → Validação → Cálculos → Gráficos e Cartões
+Análise escolhida → Upload → Leitura → Tratamento (pelo layout)
+    → Validação → Preparo → Filtros → Indicadores e Gráficos
 ```
 
 ---
@@ -117,7 +131,7 @@ Upload → Extração → Tratamento → Validação → Cálculos → Gráficos
 ### 1. Clonar o repositório
 
 ```bash
-git clone git@github.com:SEU_USUARIO/titulos_financeiro_app.git
+git clone https://github.com/oneriodev/titulos_financeiro_app.git
 cd titulos_financeiro_app
 ```
 
@@ -129,7 +143,7 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-> No Ubuntu/Debian, caso o `venv` não esteja disponível: `sudo apt install python3-venv`
+> No Ubuntu/Debian/Mint, caso o `venv` não esteja disponível: `sudo apt install python3-venv`
 
 **Windows (PowerShell)**
 ```powershell
@@ -155,23 +169,46 @@ A aplicação abre no navegador em `http://localhost:8501`.
 
 ## 📋 Formato esperado dos dados
 
-O arquivo importado deve conter, no mínimo, as colunas abaixo, conforme a exportação padrão do Consinco:
+Os nomes das colunas de cada relatório ficam no layout da sua análise (`src/analises/<analise>/layout.py`) e são convertidos para um vocabulário padronizado logo após a leitura. Para adaptar a aplicação a outro layout do Consinco, basta declarar um novo layout.
+
+**Títulos quitados**
 
 | Tipo | Colunas |
 |---|---|
-| Identificação | `Pessoa`, `Espécie`, `Nro Empresa`, `Título` |
+| Identificação | `Pessoa`, `Espécie`, `Nro Empresa` |
 | Datas | `Dt. Emissão`, `Vencimento Programado`, `Dt. Movimento`, `Dt. Quitação` |
 | Valores | `Vlr Original`, `Vlr Multa`, `Vlr Juros`, `Vlr Desconto`, `Vlr Abatimento`, `Vlr Compensação`, `Vlr Pago`, `Vlr Liquido` |
 
-Os nomes das colunas ficam centralizados em `config/settings.py`. Para adaptar a aplicação a outro layout de relatório, basta ajustar esse arquivo.
-
-### Regra do valor líquido
-
-Os totais são somados diretamente das colunas do relatório, sem recálculo. No layout do Consinco, a relação validada entre as colunas é:
+Relação validada entre as colunas:
 
 ```
 Vlr Liquido = Vlr Pago + Vlr Juros − Vlr Desconto − Vlr Compensação
 ```
+
+**Títulos em aberto**
+
+| Tipo | Colunas |
+|---|---|
+| Identificação | `Pessoa`, `Espécie`, `Empr.` |
+| Datas | `Dt. Emissão`, `Dt. Movimento`, `Vencimento Programado` |
+| Valores | `Vlr Original`, `Valor Aberto`, `Desconto`, `Valor Líquido`, `Multa`, `Juros`, `Taxa Adm.` |
+| Apoio | `Dias de Atraso` |
+
+Relação validada entre as colunas:
+
+```
+Valor Líquido = Valor Aberto − Desconto
+```
+
+### Data de referência dos títulos em aberto
+
+O relatório não informa a data em que foi extraído, e sem ela não é possível separar o que está vencido do que ainda vai vencer. A aplicação deduz essa data a partir dos próprios títulos atrasados:
+
+```
+data de extração = Vencimento Programado + Dias de Atraso
+```
+
+Em alguns títulos o Consinco calcula o atraso a partir de outra referência (como o vencimento original de um título reprogramado), o que empurra o resultado para depois da data real. Por isso a aplicação usa a **menor** data obtida. Sem nenhum título atrasado no arquivo, usa-se a data atual.
 
 ---
 
@@ -179,7 +216,7 @@ Vlr Liquido = Vlr Pago + Vlr Juros − Vlr Desconto − Vlr Compensação
 
 Relatórios financeiros contêm informações sensíveis da empresa e de fornecedores. Por isso:
 
-- A pasta `data/` e arquivos de planilha **não são versionados** (ver `.gitignore`)
+- Planilhas e arquivos de texto **não são versionados**, em nenhuma pasta do projeto (ver `.gitignore`)
 - O upload é processado **em memória**, sem gravação em disco
 - Nenhuma base de dados real ou fictícia acompanha este repositório
 
