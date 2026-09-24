@@ -24,6 +24,7 @@ from src.ui.tab_cards import renderizar_aba_cartoes
 from src.ui.tab_metrics import renderizar_aba_metricas
 from src.analises.abertos.preparo import obter_data_corte
 from src.analises.abertos.tab_resumo import renderizar_aba_resumo
+from src.core.ui.auth import exigir_login, renderizar_usuario
 
 st.set_page_config(page_title=APP_TITLE, page_icon=APP_ICON, layout=LAYOUT)
 
@@ -36,6 +37,11 @@ def carregar_dados(arquivo, layout: Layout) -> pd.DataFrame:
 
 
 def main() -> None:
+    if not exigir_login():
+        return
+
+    renderizar_usuario()
+
     st.title(f"{APP_ICON} {APP_TITLE}")
     st.caption(SUBTITULO)
 
