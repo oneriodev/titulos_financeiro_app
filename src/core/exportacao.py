@@ -160,27 +160,6 @@ def exportar_xlsx(df: pd.DataFrame) -> bytes:
 
     return buffer.getvalue()
 
-
-def test_xlsx_datas_sem_horario():
-    """
-    Garante que as datas exportadas sejam legíveis
-    e que os valores financeiros permaneçam iguais.
-    """
-    from datetime import datetime
-    from openpyxl import load_workbook
-
-    dados = pd.DataFrame(
-        {
-            "Dt. Emissão": pd.to_datetime(
-                ["2026-06-12", "2026-07-13"]
-            ),
-            "Dt. Vencimento": pd.to_datetime(
-                ["2026-09-15", "2026-09-30"]
-            ),
-            "Vlr Pago": [2356.00, 2028.00],
-        }
-    )
-
     original = dados.copy(deep=True)
 
     conteudo = exportar_xlsx(dados)

@@ -168,3 +168,70 @@ def test_xlsx_formato_celulas_datas():
     assert planilha["A2"].value == datetime(2026, 9, 1)
     assert planilha["D2"].value == datetime(2026, 9, 30)
     assert planilha["E2"].value == pytest.approx(2356.00)
+
+
+
+def test_xlsx_quatro_datas_formatadas():
+    """
+    Verifica as quatro colunas de datas do Consinco.
+
+    Confirma que o XLSX contém datas reais, formato
+    brasileiro e largura suficiente para exibição.
+    """
+    from datetime import datetime
+
+    from openpyxl import load_workbook
+
+    dados = pd.DataFrame(
+        {
+            "Dt. Emissão": pd.to_datetime(
+                ["2026-06-12", "2026-07-13"]
+            ),
+            "Dt. Vencimento": pd.to_datetime(
+                ["2026-09-15", "2026-09-30"]
+            ),
+            "Dt. Movimento": pd.to_datetime(
+                ["2026-06-12", "2026-07-13"]
+            ),
+            "Dt. Quitação": pd.to_datetime(
+                ["2026-09-22", "2026-09-30"]
+            ),
+            "Vlr Pago": [2356.00, 2028.00],
+        }
+    )
+
+    conteudo = exportar_xlsx(dados)
+
+    planilha = load_workbook(
+        io.BytesIO(conteudo),
+        data_only=False,
+    ).active
+
+    for indice in range(1, 5):
+        letra = planilha.cell(
+            row=1, column=indice
+        ).column_letter
+
+        # Confere largura das colunas.
+        largura = planilha.column_dimensions[letra].width
+        assert largura >= 18
+
+        for linha in (2, 3):
+            celula = planilha.cell(
+                row=linha,
+                column=indice,
+            )
+
+            # A célula continua sendo uma data real.
+            assert isinstance(celula.value, datetime)
+            assert celula.data_type == "d"
+            assert celula.number_format.lower() == "dd/mm/yyyy"
+            assert celula.value.hour == 0
+            assert celula.value.minute == 0
+
+    assert planilha["A2"].value == datetime(2026, 6, 12)
+    assert planilha["B3"].value == datetime(2026, 9, 30)
+
+    # Confere integridade financeira.
+    assert planilha["E2"].value == pytest.approx(2356.00)
+    assert planilha["E3"].value == pytest.approx(2028.00)
