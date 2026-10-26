@@ -25,6 +25,7 @@ from src.ui.tab_metrics import renderizar_aba_metricas
 from src.analises.abertos.preparo import obter_data_corte
 from src.analises.abertos.tab_resumo import renderizar_aba_resumo
 from src.core.ui.auth import exigir_login, renderizar_usuario
+from src.core.ui.exportacao import renderizar_exportacao
 
 st.set_page_config(page_title=APP_TITLE, page_icon=APP_ICON, layout=LAYOUT)
 
@@ -112,12 +113,49 @@ def main() -> None:
         with aba_vencimentos:
             renderizar_aba_vencimentos(df_filtrado, data_corte)
 
+    
+    # A mesma aba Dados é utilizada por ambas as análises.
     with aba_dados:
         st.write(
             f"**{formatar_inteiro(len(df_filtrado))} registros** e "
             f"{df_filtrado.shape[1]} colunas."
         )
-        st.dataframe(df_filtrado, width="stretch", height=500)
+
+        
+        # Exibe datas sem o horário, preservando os tipos
+        # utilizados pelos cálculos e filtros financeiros.
+        colunas_data = [
+            coluna
+            for coluna in df_filtrado.columns
+            if pd.api.types.is_datetime64_any_dtype(
+                df_filtrado[coluna]
+            )
+        ]
+
+        configuracao_datas = {
+            coluna: st.column_config.DateColumn(
+                coluna,
+                format="DD/MM/YYYY",
+            )
+            for coluna in colunas_data
+        }
+
+        st.dataframe(
+            df_filtrado,
+            column_config=configuracao_datas,
+            width="stretch",
+            height=500,
+        )
+
+
+        # Exporta exatamente o conjunto de dados filtrado.
+        identificador = analise.layout.nome
+
+        renderizar_exportacao(
+            df_filtrado,
+            identificador,
+        )
+
 
 
 if __name__ == "__main__":
